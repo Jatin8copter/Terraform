@@ -50,6 +50,10 @@ resource "aws_route_table" "test-rt" {
     gateway_id = aws_internet_gateway.test_igw.id
     cidr_block = "0.0.0.0/0"
   }
+    route {
+    vpc_peering_connection_id = aws_vpc_peering_connection.test-prod-peering.id
+    cidr_block = "11.0.0.0/20"
+  }
   tags = {
     Name="Test-rt"
   }
@@ -61,6 +65,10 @@ resource "aws_route_table" "prod-rt" {
   route {
     gateway_id = aws_internet_gateway.prod_igw.id
     cidr_block = "0.0.0.0/0"
+  }
+    route {
+    vpc_peering_connection_id = aws_vpc_peering_connection.test-prod-peering.id
+    cidr_block = "10.0.0.0/20"
   }
   tags = {
     Name="Prod-rt"
