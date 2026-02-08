@@ -1,22 +1,15 @@
-resource "aws_instance" "test-server" {
-  ami = var.ami_id
-  instance_type = var.inst_type
-  subnet_id = aws_subnet.test-public-subnet.id
-  associate_public_ip_address = true
-  tags = {
-    Name="Test-Server"
-  }
-vpc_security_group_ids =  [ aws_security_group.test-sg.id]
+resource "aws_key_pair" "mykey" {
+  key_name   = "mykey"
+  public_key = file("./mykey.pub")
 }
 
-
-resource "aws_instance" "prod-server" {
-  ami = var.ami_id
-  instance_type = var.inst_type
-  subnet_id = aws_subnet.prod-public-subnet.id
+resource "aws_instance" "example" {
+  ami                         = "ami-06e3c045d79fd65d9"
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public_subnet.id
   associate_public_ip_address = true
+  key_name                    = aws_key_pair.mykey.key_name
   tags = {
-    Name="Prod-Server"
+    Name = "HelloWorld"
   }
-  vpc_security_group_ids =  [ aws_security_group.prod-sg.id]
 }

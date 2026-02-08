@@ -1,86 +1,50 @@
-resource "aws_vpc" "test_vpc" {
-  cidr_block = "10.0.0.0/20"
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
   tags = {
-    Name = "Test-vpc"
+    Name = "main"
   }
 }
 
-resource "aws_vpc" "prod_vpc" {
-  cidr_block = "11.0.0.0/20"
+resource "aws_subnet" "public_subnet" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+
   tags = {
-    Name = "Prod-vpc"
+    Name = "PublicSubnet"
   }
 }
 
-resource "aws_internet_gateway" "test_igw" {
-  vpc_id = aws_vpc.test_vpc.id
+resource "aws_subnet" "private_subnet" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.2.0/24"
+
   tags = {
-    Name = "Test_igw"
+    Name = "PrivateSubnet"
   }
 }
 
-resource "aws_internet_gateway" "prod_igw" {
-  vpc_id = aws_vpc.prod_vpc.id
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
   tags = {
-    Name = "Prod_igw"
+    Name = "igw"
   }
 }
 
-
-resource "aws_subnet" "test-public-subnet" {
-  vpc_id     = aws_vpc.test_vpc.id
-  cidr_block = "10.0.0.0/24"
-  tags = {
-    Name = "Test-public-subnet"
-  }
-}
-
-resource "aws_subnet" "prod-public-subnet" {
-  vpc_id     = aws_vpc.prod_vpc.id
-  cidr_block = "11.0.0.0/24"
-  tags = {
-    Name = "Prod-public-subnet"
-  }
-}
-
-resource "aws_route_table" "test-rt" {
-  vpc_id = aws_vpc.test_vpc.id
+resource "aws_route_table" "example" {
+  vpc_id = aws_vpc.main.id
 
   route {
-    gateway_id = aws_internet_gateway.test_igw.id
     cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
   }
-    route {
-    vpc_peering_connection_id = aws_vpc_peering_connection.test-prod-peering.id
-    cidr_block = "11.0.0.0/20"
-  }
+
   tags = {
-    Name="Test-rt"
+    Name = "route_table"
   }
 }
 
-resource "aws_route_table" "prod-rt" {
-  vpc_id = aws_vpc.prod_vpc.id
-
-  route {
-    gateway_id = aws_internet_gateway.prod_igw.id
-    cidr_block = "0.0.0.0/0"
-  }
-    route {
-    vpc_peering_connection_id = aws_vpc_peering_connection.test-prod-peering.id
-    cidr_block = "10.0.0.0/20"
-  }
-  tags = {
-    Name="Prod-rt"
-  }
-}
-
-resource "aws_route_table_association" "test-rt-association" {
-    subnet_id = aws_subnet.test-public-subnet.id
-    route_table_id = aws_route_table.test-rt.id
-}
-
-resource "aws_route_table_association" "prod-rt-association" {
-    subnet_id = aws_subnet.prod-public-subnet.id
-    route_table_id = aws_route_table.prod-rt.id
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.example.id
 }
